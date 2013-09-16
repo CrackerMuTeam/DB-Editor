@@ -324,9 +324,10 @@ begin
 end;
 function GetItemProperty(s:string):TItemprop;
 var
-  n,x,y,z,a,b,c,p15,pex:integer;
+  n,x,y,z,a,b,c,v,p15,aff,pex,p14:integer;
+  iserr:boolean;
 begin
-  pex:=0;
+    iserr:=true;
   for n:=0 to 1 do
   for x:=0 to 15 do
   for y:=0 to 1 do
@@ -339,6 +340,7 @@ begin
       result.dur:=GlobalConfig.hextoint(s[5]+s[6]);
       if n=1 then result.skill:=true else result.skill:=false;
       if y=1 then result.Luck:=true else result.luck:=false;
+      iserr:=false;
       p15:=GlobalConfig.hextoint(s[15]);
       if p15>=12 then
       begin
@@ -447,6 +449,7 @@ var
   cor:tcolor;
   ItemBmp:Tbitmap;
 begin
+  result:=false;
   try
     ItemBmp:=tbitmap.Create();
     ItemBMP.Width:=vaultimg.LagItemY;
@@ -457,7 +460,8 @@ begin
     For I:=1 to 6 do
       if item.ItemProp.Exc[i]=true then b:=true;
 
-    cor:=clwhite;
+    if (b=false) and (item.ItemProp.Ancient='') then
+      cor:=clwhite;
     if (b=false) and (item.ItemProp.Ancient<>'') then
       cor:=$0042DD7C;
     if (b=true) and (item.ItemProp.Ancient='') then
@@ -508,13 +512,10 @@ begin
       ibuffer.Canvas.TextOut(item.X*vaultimg.lagitemX+3,item.Y*vaultimg.lagitemY+t+YEx,s);
 
     vaultform.image1.Canvas.Draw(0,0,IBuffer);
-    result:=true;
+  finally
     itembmp.Free;
-  except
-    result:=false;
+    result:=true;
   end;
-
-
 end;
 function EqpToImage(Item:TItemInfo;arquivo:string):boolean;
 var b:boolean;
@@ -522,64 +523,83 @@ i,t:integer;
 s:string;
 cor:tcolor;
   ItemBmp:Tbitmap;
+  x,y:integer;
 begin
+  result:=false;
   try
-    ItemBmp:=tbitmap.Create();
-    ItemBMP.Width:=vaultimg.LagItemY;
-    ItemBMP.Height:=vaultimg.LagItemX;
-    ItemBMP.LoadFromFile(arquivo);
-    b:=false;
-    For I:=1 to 6 do
-      if item.ItemProp.Exc[i]=true then b:=true;
-    cor:=clwhite;
-    if (b=false) and (item.ItemProp.Ancient<>'') then
-      cor:=$0042DD7C;
-    if (b=true) and (item.ItemProp.Ancient='') then
-      cor:=clGreen;
-    if (b=true) and (item.ItemProp.Ancient<>'') then
-      cor:= $003DFE21;
-    for I := item.X to item.X+item.ItemMdbInfo.X-1 do
-      for t := item.Y to item.Y+item.ItemMdbInfo.Y-1 do
-        IBuffer.Canvas.CopyRect(Bounds(i*vaultimg.lagitemX,t*vaultimg.lagitemY,vaultimg.lagitemX,vaultimg.lagitemY),itembmp.canvas,Bounds(0,0,itembmp.Width,itembmp.Height));
-    ibuffer.Canvas.Pen.Color:=cor;
-    i:=(vaultvar.EquipItems[item.Y].X+vaultvar.EquipItems[item.Y].TamX);
-    t:=(vaultvar.EquipItems[item.Y].Y+vaultvar.EquipItems[item.Y].TamY);
-    ibuffer.Canvas.MoveTo(vaultvar.EquipItems[item.Y].X,vaultvar.EquipItems[item.Y].Y);
-    ibuffer.Canvas.LineTo(i-1,(vaultvar.EquipItems[item.Y].Y));
-    ibuffer.Canvas.MoveTo(item.X*vaultimg.lagitemX,t-1);
-    ibuffer.Canvas.LineTo(i,t-1);
-    ibuffer.Canvas.MoveTo(vaultvar.EquipItems[item.Y].X,vaultvar.EquipItems[item.Y].Y);
-    ibuffer.Canvas.LineTo(vaultvar.EquipItems[item.Y].X,t-1);
-    ibuffer.Canvas.MoveTo(i-1,vaultvar.EquipItems[item.Y].Y);
-    ibuffer.Canvas.LineTo(i-1,t);
-    ibuffer.Canvas.Font.Name:='MS Serif';
-    ibuffer.Canvas.Font.Size:=7;
-    ibuffer.Canvas.Font.Color:=cor;
-    ibuffer.Canvas.Brush.Style := bsClear;
-    ibuffer.Canvas.Font.Size:=7;
-    s:='';
-    t:=3;
-    for I := 1 to length(item.ItemMdbInfo.nome) do
-    begin
-      s:=s+item.ItemMdbInfo.nome[i];
-      if ibuffer.Canvas.TextWidth(s)>=vaultvar.EquipItems[item.Y].TamX-10 then
-      begin
-        if (t+ibuffer.Canvas.TextHeight(s))<vaultvar.EquipItems[item.Y].TamY-6 then
-        begin
-          ibuffer.Canvas.TextOut(vaultvar.EquipItems[item.Y].X+3,vaultvar.EquipItems[item.Y].Y+t,s);
-          t:=t+ibuffer.Canvas.TextHeight(s);
-        end;
-        s:='';
-      end;
+  ItemBmp:=tbitmap.Create();
+  ItemBMP.Width:=vaultimg.LagItemY;
+  ItemBMP.Height:=vaultimg.LagItemX;
+  ItemBMP.LoadFromFile(arquivo);
+  x:=item.X;
+  Y:=item.Y;
+  b:=false;
+  For I:=1 to 6 do
+    if item.ItemProp.Exc[i]=true then b:=true;
 
+  if (b=false) and (item.ItemProp.Ancient='') then
+  begin
+    cor:=clwhite;
+  end;
+  if (b=false) and (item.ItemProp.Ancient<>'') then
+  begin
+    cor:=$0042DD7C;
+  end;
+  if (b=true) and (item.ItemProp.Ancient='') then
+  begin
+    cor:=clGreen;
+  end;
+  if (b=true) and (item.ItemProp.Ancient<>'') then
+  begin
+    cor:= $003DFE21;
+  end;
+
+  for I := item.X to item.X+item.ItemMdbInfo.X-1 do
+    for t := item.Y to item.Y+item.ItemMdbInfo.Y-1 do
+      IBuffer.Canvas.CopyRect(Bounds(i*vaultimg.lagitemX,t*vaultimg.lagitemY,vaultimg.lagitemX,vaultimg.lagitemY),itembmp.canvas,Bounds(0,0,itembmp.Width,itembmp.Height));
+   ibuffer.Canvas.Pen.Color:=cor;
+  i:=(vaultvar.EquipItems[item.Y].X+vaultvar.EquipItems[item.Y].TamX);
+  t:=(vaultvar.EquipItems[item.Y].Y+vaultvar.EquipItems[item.Y].TamY);
+  ibuffer.Canvas.MoveTo(vaultvar.EquipItems[item.Y].X,vaultvar.EquipItems[item.Y].Y);
+  ibuffer.Canvas.LineTo(i-1,(vaultvar.EquipItems[item.Y].Y));
+
+  ibuffer.Canvas.MoveTo(item.X*vaultimg.lagitemX,t-1);
+  ibuffer.Canvas.LineTo(i,t-1);
+
+  ibuffer.Canvas.MoveTo(vaultvar.EquipItems[item.Y].X,vaultvar.EquipItems[item.Y].Y);
+  ibuffer.Canvas.LineTo(vaultvar.EquipItems[item.Y].X,t-1);
+
+  ibuffer.Canvas.MoveTo(i-1,vaultvar.EquipItems[item.Y].Y);
+  ibuffer.Canvas.LineTo(i-1,t);
+  ibuffer.Canvas.Font.Name:='MS Serif';
+  ibuffer.Canvas.Font.Size:=7;
+  ibuffer.Canvas.Font.Color:=cor;
+  ibuffer.Canvas.Brush.Style := bsClear;
+  ibuffer.Canvas.Font.Size:=7;
+  s:='';
+  t:=3;
+  for I := 1 to length(item.ItemMdbInfo.nome) do
+  begin
+    s:=s+item.ItemMdbInfo.nome[i];
+    if ibuffer.Canvas.TextWidth(s)>=vaultvar.EquipItems[item.Y].TamX-10 then
+    begin
+      if (t+ibuffer.Canvas.TextHeight(s))<vaultvar.EquipItems[item.Y].TamY-6 then
+      begin
+        ibuffer.Canvas.TextOut(vaultvar.EquipItems[item.Y].X+3,vaultvar.EquipItems[item.Y].Y+t,s);
+        t:=t+ibuffer.Canvas.TextHeight(s);
+      end;
+      s:='';
     end;
-    if (t+ibuffer.Canvas.TextHeight(s))<vaultvar.EquipItems[item.Y].Y-6 then
-      ibuffer.Canvas.TextOut(vaultvar.EquipItems[item.Y].X+3,vaultvar.EquipItems[item.Y].Y+t,s);
-    vaultform.image1.Canvas.Draw(0,0,IBuffer);
+
+  end;
+  if (t+ibuffer.Canvas.TextHeight(s))<vaultvar.EquipItems[item.Y].Y-6 then
+    ibuffer.Canvas.TextOut(vaultvar.EquipItems[item.Y].X+3,vaultvar.EquipItems[item.Y].Y+t,s);
+
+
+  vaultform.image1.Canvas.Draw(0,0,IBuffer);
+  finally
     itembmp.Free;
     result:=true;
-  except
-    result:=false;
   end;
 end;
 
@@ -587,7 +607,7 @@ end;
 Function ItemToWs(Item:TItemInfo;tipo:string;X,Y:Integer;Msg:String):boolean;
 var i,t:integer;
     CanInsert:boolean;
-
+    s:string;
 begin
   result:=true;
   caninsert:=true;
@@ -647,42 +667,38 @@ begin
     item.ItemMdbInfo.Y:=1;
   end;
   item.ItemProp:=GetItemProperty(s);
+  if (tipo='ws') and (ItemtoWs(item,tipo,7,14,vaulterror1)=true) then
+  begin
+    item.Usar:=true;
+    WsToImage(item,ExtractFilePath(Application.ExeName)+'CMT Data\VaultImages\InventoryBox2.bmp',0);
+    inc(vaultvar.Ultimows);
+    vaultvar.VaultItems[vaultvar.Ultimows]:=item;
 
-  if (tipo='ws')  then
-    if (ItemtoWs(item,tipo,7,14,vaulterror1)) then
-    begin
-      item.Usar:=true;
-      WsToImage(item,ExtractFilePath(Application.ExeName)+'CMT Data\VaultImages\InventoryBox2.bmp',0);
-      inc(vaultvar.Ultimows);
-      vaultvar.VaultItems[vaultvar.Ultimows]:=item;
-    end else result:=false;
-  if (tipo='inv') then
-    if (Itemtows(item,tipo,7,7,vaulterror1)=true) then
-    begin
-      item.Usar:=true;
-      wsToImage(item,ExtractFilePath(Application.ExeName)+'CMT Data\VaultImages\InventoryBox2.bmp',225);
-      inc(vaultvar.Ultimoinv);
-      vaultvar.inventoryItems[vaultvar.Ultimoinv]:=item;
-    end else result:=false;
-  if (tipo='eqp') then
-    if (Itemtoeqp(item)=true) then
-    begin
-      item.Usar:=true;
-      eqpToImage(item, vaultvar.EquipItems[yy].Image);
-      vaultvar.EquipItems[yy].ItemInfo:=item;
-    end else result:=false;
-  if (tipo='ps') then
-    if (Itemtows(item,tipo,7,3,vaulterror1)=true) then
-    begin
-      item.Usar:=true;
-      wsToImage(item, ExtractFilePath(Application.ExeName)+'CMT Data\VaultImages\InventoryBox2.bmp',0);
-      inc(vaultvar.Ultimops);
-      vaultvar.psItems[vaultvar.Ultimops]:=item;
-    end else result:=false;
+  end;
+  if (tipo='inv') and (Itemtows(item,tipo,7,7,vaulterror1)=true) then
+  begin
+    item.Usar:=true;
+    wsToImage(item,ExtractFilePath(Application.ExeName)+'CMT Data\VaultImages\InventoryBox2.bmp',225);
+    inc(vaultvar.Ultimoinv);
+    vaultvar.inventoryItems[vaultvar.Ultimoinv]:=item;
+  end;
+  if (tipo='eqp') and (Itemtoeqp(item)=true) then
+  begin
+    item.Usar:=true;
+    eqpToImage(item, vaultvar.EquipItems[yy].Image);
+    vaultvar.EquipItems[yy].ItemInfo:=item;
+  end;
+  if (tipo='ps') and (Itemtows(item,tipo,7,3,vaulterror1)=true) then
+  begin
+    item.Usar:=true;
+    wsToImage(item, ExtractFilePath(Application.ExeName)+'CMT Data\VaultImages\InventoryBox2.bmp',0);
+    inc(vaultvar.Ultimops);
+    vaultvar.psItems[vaultvar.Ultimops]:=item;
+  end;
 end;
 function CorrigirVault(s:string):string;
 var Stemp,xs:string;
-X,Y:byte;
+X,Y,I:byte;
 begin
   xs:=s;
   sTemp:='';
@@ -722,9 +738,9 @@ end;
 function SalvarWarehouse:boolean;
 var
   i,t,j:integer;
-  sSql,sSqlSub:string;
+  sSql,sSqlSub,
+  psSql,psSqlSub:string;
 begin
-  result:=false;
   if vaultvar.VaultOn=true then
   begin
     vaultvar.ExtraVaults[vaultvar.VaultAtual].zen:=vaultform.zenedit.text;
@@ -779,7 +795,8 @@ procedure FillHexWS(item:TField); {Le o Vault em hexa}
 type Tcharset=set of char;
 var itemblock:array of byte;
     sWS,sItem:string;
-    X,Y,i,j:integer;
+    X,Y,i,j,panelcount:integer;
+    ItemInf:TitemInfo;
 begin
   with item do
   begin
@@ -805,6 +822,7 @@ begin
           for X:=0 to 7 do
             sws:=sws+VaultVar.VaultHex[VaultVar.VaultAtual,X,Y];
         end;
+      panelcount:=0;
 
       for Y:=0 to 14 do
       for X:=0 to 7 do
@@ -827,7 +845,8 @@ procedure FillHexInv(item:TField;S:string); {Le o Vault em hexa}
 type Tcharset=set of char;
 var itemblock:array of byte;
     sWS,sItem:string;
-    X,Y,i,j:integer;
+    X,Y,i,j,panelcount:integer;
+    ItemInf:TitemInfo;
 begin
   with item do
   begin
@@ -853,16 +872,16 @@ begin
         for Y:=0 to 11 do
           sws:=sws+VaultVar.EqpHex[Y];
         for Y:=0 to 7 do
-          for X:=0 to 7 do
-            sws:=sws+VaultVar.InventoryHex[X,Y];
+        for X:=0 to 7 do
+          sws:=sws+VaultVar.InventoryHex[X,Y];
         if (PSTable=Character) and (PSCollumn=Inventory) and (PSRef=CName) then
           for Y:=0 to 4 do
-            for X:=0 to 7 do
-              sws:=sws+VaultVar.PSHex[X,Y];
+          for X:=0 to 7 do
+            sws:=sws+VaultVar.PSHex[X,Y];
       end;
+      panelcount:=0;
 
-
-      for X := 0 to 11 do
+      for Y := 0 to 11 do
       begin
         sitem:=midstr(sws,ItemHexCount*(X)+1,ItemHexCount);
         VaultVar.EqpHex[X]:=sitem;
@@ -870,7 +889,7 @@ begin
           sitem:='';
         if sitem<>'' then
         begin
-          SetItemInfo(sitem,0,X,'eqp');
+          SetItemInfo(sitem,0,Y,'eqp');
         end;
       end;
 
@@ -909,7 +928,8 @@ procedure FillHexPS(item:TField;S:string); {Le o Vault em hexa}
 type Tcharset=set of char;
 var itemblock:array of byte;
     sWS,sItem:string;
-    X,Y,i,j:integer;
+    X,Y,i,j,panelcount:integer;
+    ItemInf:TitemInfo;
 begin
   with item do
   begin
@@ -934,6 +954,7 @@ begin
         for Y:=0 to 4 do
         for X:=0 to 7 do
           sws:=sws+VaultVar.PSHex[X,Y];
+      panelcount:=0;
 
       for Y:=0 to 4 do
       for X:=0 to 7 do
@@ -980,7 +1001,7 @@ Unique2:Boolean;
 Unique,Level,Option2,Exc,Anc:byte;
 begin
   Hex1:='FF'; Hex2:='00'; Hex3:='00'; Hex4:='00000000'; Hex5:='00'; Hex6:='00'; Hex7:='00'; Hex8:='';
-  Option2:=0; Exc:=0; Unique:=0; Anc:=0;
+  Option2:=0; Exc:=0; Level:=0; Unique:=0; Anc:=0;
   Unique2:=False;
   {ID-Hex1}
   for I := 0 to VaultVar.QuantidadeDeItems do
@@ -1284,7 +1305,6 @@ begin
         VaultVar.SetNumber:=MdbItems[i].SetNumber;
       end;
     end;
-    ti:=0;
     if exctype='we' then
     begin
       Ti:=1;
@@ -1467,7 +1487,7 @@ end;
 procedure TVaultForm.RzTabControl1Change(Sender: TObject);
 var
   s,g:string;
-  i,j: Integer;
+  i,z,j: Integer;
   f:tfield;
 begin
   if VaultVar.VaultOn=true then
@@ -1815,20 +1835,17 @@ end;
 procedure TVaultForm.Timer1Timer(Sender: TObject);
 var
   Pt: TPoint;
-  Sx,Sy,Ty:Integer;
+  Sx,Sy,Ty,i:Integer;
 begin
   {Posição do mouse na imagem}
   pt:=vaultform.ClientOrigin;
   Pt.X:=mouse.CursorPos.X-pt.x-274;
   Pt.Y:=mouse.CursorPos.Y-pt.y-18 ;
   {Posição do quadrado}
-  Sx:=-1;
-  Sy:=-1;
-
   if Pt.X / VaultImg.LagItemX>=0 then
     Sx:=(Pt.X div VaultImg.LagItemX);
   if Pt.Y / VaultImg.LagItemY>=0 then
-    Sy:=round(Pt.Y div (VaultImg.LagItemY));
+  Sy:=round(Pt.Y div (VaultImg.LagItemY));
   ty:=(Pt.Y-225);
   if ty>0 then ty:=ty div (VaultImg.LagItemY);
   {Funções do Mouse na Imagem}

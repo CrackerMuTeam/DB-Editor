@@ -5,7 +5,7 @@
 			<Option Name="Personality">Delphi.Personality</Option>
 			<Option Name="ProjectType"></Option>
 			<Option Name="Version">1.0</Option>
-			<Option Name="GUID">{7BEC0D20-AAD4-4480-8151-DE9617BDD42B}</Option>
+			<Option Name="GUID">{F6D3E49B-1990-4709-BA25-06E680937CE5}</Option>
 		</Option>
 	</PersonalityInfo>
 	<Delphi.Personality>
@@ -172,4 +172,6 @@
 			<VersionInfoKeys Name="Comments"></VersionInfoKeys>
 		</VersionInfoKeys>
 	</Delphi.Personality>
+	<StarTeamAssociation></StarTeamAssociation>
+	<StarTeamNonRelativeFiles></StarTeamNonRelativeFiles>
 </BorlandProject>

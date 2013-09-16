@@ -8,9 +8,9 @@ uses
 
 type
   TVarForm = class(TForm)
-    itemQuery: TADOQuery;
     DataSource1: TDataSource;
     ADOTable1: TADOTable;
+    itemquery: TADOQuery;
   private
     { Private declarations }
   public
@@ -45,6 +45,7 @@ Type TGlobalConfig=class(TForm)
   procedure arrayexp;
   function bytetohex(src: byte): string;
   function HexToInt(Hex : string) : Cardinal;
+  function To2Char(const I:integer):string ;   {Int-->2char string}
 
 end;
 type TItemMdbInfo=record
@@ -82,7 +83,7 @@ catalog:string='MuOnline';
 memudsn:string='MuOnlineJoinDb';
 memuid:string='sa';
 memupwd:string='';
-mecatalog:string='MuOnline';   //Me_
+mecatalog:string='MuOnline'; //Me_Muonline
 //[Others]
 vs:string='CMT';
 mastercatalog:string='Master';
@@ -95,7 +96,7 @@ itemhexcount:integer=20;
 ItemHextype:integer=1;
 leveltotal:integer=400;
 //[EcriptationUsage]
-EncPass:boolean=false;
+EncPass:boolean=true;
 MSSQLBinnFolder:string='';
 NonEncriptedCollumn:string='';
 EncDll:String='WZ_MD5_MOD.dll';
@@ -107,9 +108,9 @@ leadershipTable:string='Character';
 LeaderShip:string='Leadership';
 leadershipRef:string='name';
 //[UseResets]
-ResetsTable:string=''; //Character
-Resets:string='';   //Resets
-ResetsRef:string=''; //name
+ResetsTable:string='Character';
+Resets:string='Resets';
+ResetsRef:string='name';
 //[UseMultiVault]
 MultiVaultTable:string='ExtWareHouse';   
 MultiVaultMoney:string='Money';
@@ -454,6 +455,7 @@ VaultError5:string='Não foi possivel salvar este Warehouse';
 VaultDelete:string='Você deseja deletar esse item?';
 VaultQuestion1:string='Você deseja salvar o Warehouse';
 VaultConfirm1:string='O Warehouse foi salvo com sucesso!';
+
 
 {SqlNames.txt}
 {MeMuonline}
@@ -938,28 +940,27 @@ begin
   begin
     if (fileexists(ExtractFilePath(Application.ExeName)+'\CMT Data\muitem.mdb')) then
     begin
-      ItemQuery.ConnectionString:='Provider=Microsoft.Jet.OLEDB.4.0;Data Source='+ExtractFilePath(Application.ExeName)+'\CMT Data\muitem.mdb'+';Mode=ReadWrite;Persist Security Info=False';
-      itemquery.SQL.Clear;
-      itemquery.SQL.Add('select id2,unique2,name,type,x,y,wearto,setnumber,setitem,excoptiontype from item');
-      itemquery.Open;
-      Setlength(MdbInfo.MdbItems,itemquery.RecordCount-1);
-      MdbInfo.QuantidadeDeItems:=itemquery.RecordCount-1;
+      ItemQuery.ConnectionString:='Provider=Microsoft.Jet.OLEDB.4.0;Data Source='+ExtractFilePath(Application.ExeName)+'CMT Data\MuItem.mdb;Mode=ReadWrite;Persist Security Info=False';
+      ItemQuery.SQL.Clear;
+      ItemQuery.SQL.Add('select id2,unique2,name,type,x,y,wearto,setnumber,setitem,excoptiontype from item');
+      ItemQuery.Open;
+      Setlength(MdbInfo.MdbItems,ItemQuery.RecordCount-1);
+      MdbInfo.QuantidadeDeItems:=ItemQuery.RecordCount-1;
       for i := 0 to MdbInfo.QuantidadeDeItems do
       begin
-
-        MdbInfo.MdbItems[i].Index:=hextoint(itemquery.Fields[0].asstring);
-        MdbInfo.MdbItems[i].Classe:=(itemquery.Fields[1].asinteger);
-        MdbInfo.MdbItems[i].Nome:=itemquery.Fields[2].asstring;
-        MdbInfo.MdbItems[i].Tipo:=itemquery.Fields[3].asstring;
-        MdbInfo.MdbItems[i].X:=itemquery.Fields[4].asinteger;
-        MdbInfo.MdbItems[i].Y:=itemquery.Fields[5].asinteger;
-        MdbInfo.MdbItems[i].Wearto:=itemquery.Fields[6].asstring;
-        MdbInfo.MdbItems[i].SetNumber:=itemquery.Fields[7].asinteger;
-        MdbInfo.MdbItems[i].SetItem:=itemquery.Fields[8].asstring;
-        MdbInfo.MdbItems[i].ExcOptionType:=itemquery.Fields[9].asstring;
-        itemquery.Next;
+        MdbInfo.MdbItems[i].Index:=hextoint(ItemQuery.Fields[0].asstring);
+        MdbInfo.MdbItems[i].Classe:=(ItemQuery.Fields[1].asinteger);
+        MdbInfo.MdbItems[i].Nome:=ItemQuery.Fields[2].asstring;
+        MdbInfo.MdbItems[i].Tipo:=ItemQuery.Fields[3].asstring;
+        MdbInfo.MdbItems[i].X:=ItemQuery.Fields[4].asinteger;
+        MdbInfo.MdbItems[i].Y:=ItemQuery.Fields[5].asinteger;
+        MdbInfo.MdbItems[i].Wearto:=ItemQuery.Fields[6].asstring;
+        MdbInfo.MdbItems[i].SetNumber:=ItemQuery.Fields[7].asinteger;
+        MdbInfo.MdbItems[i].SetItem:=ItemQuery.Fields[8].asstring;
+        MdbInfo.MdbItems[i].ExcOptionType:=ItemQuery.Fields[9].asstring;
+        ItemQuery.Next;
       end;
-      itemquery.Close;
+      ItemQuery.Close;
     end else application.MessageBox(pchar(VaultError1),pchar(VaultErrorCaption),mb_ok+mb_iconwarning);
   end;
 end;
@@ -987,6 +988,15 @@ begin
     Quests[i].Code:='';
     Quests[i].Nome:='';
   end;
+end;
+
+function TGlobalConfig.To2Char(const I:integer):string ;   {Int-->2char string}
+var
+  S:string;
+begin
+  s:=inttostr(i);
+  if length(s)=1 then s:='0'+s;
+  result:=s;
 end;
 
 end.
