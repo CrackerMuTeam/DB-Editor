@@ -1,0 +1,6 @@
+"0" "Hero Level 2"
+"1" "Hero Level 1"
+"2" "Normal"
+"3" "Pk Level 1"
+"4" "Pk Level 2"
+"5" "Murder"

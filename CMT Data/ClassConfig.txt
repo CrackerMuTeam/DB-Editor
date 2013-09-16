@@ -1,0 +1,9 @@
+"0" "0-Dark Wizard" "0"
+"1" "1-Soul Master" "1"
+"16" "16-Dark Knight" "0"
+"17" "17-Blade Knight" "1"
+"32" "32-Elf" "0"
+"33" "33-Muse Elf" "1" 
+"48" "48-Magic Gladiator" "0"
+"64" "64-Dark Lord" "0"
+

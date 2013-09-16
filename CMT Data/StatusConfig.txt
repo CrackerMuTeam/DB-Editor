@@ -1,0 +1,4 @@
+"0" "0-Normal"
+"1" "1-Banned"
+"8" "8-Game Master"
+
